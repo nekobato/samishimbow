@@ -6,6 +6,4 @@
 
 ##スクラム
 
-	http://ec2-23-20-200-122.compute-1.amazonaws.com/PHPMyScrum
-
-
+	[PHPMyScrum](http://ec2-23-20-200-122.compute-1.amazonaws.com/PHPMyScrum)
