@@ -1,0 +1,3 @@
+dependencies: \
+  /Users/malt/Documents/programming/Titanium_Studio_Workspace/Samishimbow/build/iphone/Classes/CADebugMacros.cpp \
+  /Users/malt/Documents/programming/Titanium_Studio_Workspace/Samishimbow/build/iphone/Classes/CADebugMacros.h
