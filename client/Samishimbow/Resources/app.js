@@ -1,7 +1,15 @@
 var my_tags = new Array(3);
+var my_comments = new Array(3);
+var my_tag_flags = new Array(3);
 my_tags[0] = "カラオケ";
-my_tags[1] = "食事";
-my_tags[2] = "勉強";
+my_tags[1] = "かも";
+my_tags[2] = "めし";
+my_comments[0] = "カラオケ行く人募集中だよおおおおおおお";
+my_comments[1] = "鴨池でまったりしたい人募集中だよおおおおおおお";
+my_comments[2] = "お腹すいた";
+my_tag_flags[0] = true;
+my_tag_flags[1] = false;
+my_tag_flags[2] = false;
 
 Titanium.UI.setBackgroundColor('#000');
 
@@ -12,44 +20,40 @@ var win_login = Titanium.UI.createWindow({
 });
 var win_samisimbow = Titanium.UI.createWindow({
 	title:'Samisimbow',
-	backgroundColor:'#fff',
+	backgroundColor:'#000',
 });
 var win_edit_tag = Titanium.UI.createWindow({  
     title:'EditLabel',
-    backgroundColor:'#fff',
-    left:-320,
+    backgroundColor:'#000',
 });
 var win_search = Titanium.UI.createWindow({
 	title:'Search',
-	backgroundColor:'#fff',
-	left:320,
-});
-var open_animation = Ti.UI.createAnimation({
-	left:0,
-	duration:500,
-});
-var left_animation = Ti.UI.createAnimation({
-	left:-320,
-	duration:500,
-});
-var right_animation = Ti.UI.createAnimation({
-	left:320,
-	duration:500,
+	backgroundImage:'/images/match.png',
 });
 
 /***************variable****************/
 var tag_labels = new Array(3);
+var comment_labels = new Array(3);
 var my_tag_buttons = new Array(3);
+var tag_switch = new Array(3);
 var search_button;
 var editing_tag;
 var title_label;
 var name_label;
 var user_image;
 var edit_field;
+var edit_comment_field;
 var edit_done;
-var edit_toolbar;
-var search_toolbar;
+var edit_cancel;
+var edit_title;
+var edit_tag_label;
+var edit_comment_label;
+var edit_tag_search;
+var search_select_buttons = new Array(3);
+var search_select_all;
+var search_my_icon;
 var search_back_button;
+var search_load;
 var facebook_login;
 var facebook_logout;
 
@@ -57,19 +61,28 @@ var facebook_logout;
 Ti.Facebook.appid = '115511555274607';
 facebook_login = Titanium.UI.createButton({
 	bottom:10,
+	width:272,
+	height:49,
 	backgroundImage:'/buttons/fblogin.png',
 });
 facebook_login.addEventListener('click', function(){
 	Ti.Facebook.authorize();
 });
-facebook_logout = Ti.Facebook.createLoginButton({
+facebook_logout = Titanium.UI.createButton({
 	top:10,
 	right:10,
+	width:73,
+	height:25,
+	backgroundImage:'/buttons/fblogout.png',
+});
+facebook_logout.addEventListener('click', function(){
+	Ti.Facebook.logout();
+	win_samisimbow.close();
 });
 Ti.Facebook.addEventListener('login', function(e){
 	if(e.success){
 		Ti.Facebook.requestWithGraphPath('me',{},"GET",setFacebookData);
-		win_samisimbow.open(open_animation);
+		win_samisimbow.open();
 	}
 });
 Ti.Facebook.addEventListener('logout', function(e){
@@ -80,53 +93,94 @@ Ti.Facebook.addEventListener('logout', function(e){
 win_login.add(facebook_login);
 
 /*************************main************************/
-
 for(var i=0;i<3;i++){
 	tag_labels[i] = Titanium.UI.createLabel({
-		text:"Tag"+(i+1)+":",
-		top:200+i*50,
-		left:10,
-	})
-	my_tag_buttons[i] = Titanium.UI.createButton({
-		title:my_tags[i],
-		top:200+i*50,
-		left:100,
-		width:100,
-		font:{fontFamily:'Osaka'},
+		text:my_tags[i],
+		top:105+i*100,
+		left:5,
+		color:'#000',
+		font:{fontSize:25,fontFamily:'S2G Uni font'},
 	});
-	win_samisimbow.add(tag_labels[i]);
+	comment_labels[i] = Titanium.UI.createLabel({
+		text:my_comments[i],
+		top:135+i*100,
+		left:5,
+		width:260,
+		color:'#000',
+		font:{fontSize:20,fontFamily:'S2G Uni font'},
+	});
+	my_tag_buttons[i] = Titanium.UI.createButton({
+		backgroundImage:'/buttons/status'+i+'.png',
+		top:100+i*100,
+		width:320,
+		height:100,
+	});
+	tag_switch[i] = Titanium.UI.createButton({
+		top:134+i*100,
+		right:15,
+		width:32,
+		height:32,
+	});
+	if(my_tag_flags[i])	tag_switch[i].backgroundImage = '/buttons/on.png';
+	else				tag_switch[i].backgroundImage = '/buttons/off.png';
+	
 	win_samisimbow.add(my_tag_buttons[i]);
+	win_samisimbow.add(tag_labels[i]);
+	win_samisimbow.add(comment_labels[i]);
+	win_samisimbow.add(tag_switch[i]);
 }
 my_tag_buttons[0].addEventListener('click', function(){
 	editing_tag = 0;
 	edit_field.value=""+my_tags[editing_tag];
-	win_edit_tag.open(open_animation);
+	edit_comment_field.value=""+my_comments[editing_tag];
+	win_edit_tag.open();
 });
 my_tag_buttons[1].addEventListener('click', function(){
 	editing_tag = 1;
 	edit_field.value=""+my_tags[editing_tag];
-	win_edit_tag.open(open_animation);
+	edit_comment_field.value=""+my_comments[editing_tag];
+	win_edit_tag.open();
 });
 my_tag_buttons[2].addEventListener('click', function(){
 	editing_tag = 2;
-	edit_field.value=""+my_tags[editing_tag];
-	win_edit_tag.open(open_animation);
+	edit_field.value=my_tags[editing_tag];
+	edit_comment_field.value=my_comments[editing_tag];
+	win_edit_tag.open();
+});
+tag_switch[0].addEventListener('click', function(){
+	my_tag_flags[0] = !my_tag_flags[0];
+	if(my_tag_flags[0]) tag_switch[0].backgroundImage = '/buttons/on.png';
+	else				tag_switch[0].backgroundImage = '/buttons/off.png';
+});
+tag_switch[1].addEventListener('click', function(){
+	my_tag_flags[1] = !my_tag_flags[1];
+	if(my_tag_flags[1]) tag_switch[1].backgroundImage = '/buttons/on.png';
+	else				tag_switch[1].backgroundImage = '/buttons/off.png';
+});
+tag_switch[2].addEventListener('click', function(){
+	my_tag_flags[2] = !my_tag_flags[2];
+	if(my_tag_flags[2]) tag_switch[2].backgroundImage = '/buttons/on.png';
+	else				tag_switch[2].backgroundImage = '/buttons/off.png';
 });
 name_label = Titanium.UI.createLabel({
-	left:10,
-	top:10,
+	font:{fontSize:20, fontFamily:'S2G Uni font'},
+	color:'#fff',
+	top:40,
 });
 user_image = Titanium.UI.createImageView({
 	left:10,
-	top:50,
+	top:10,
 });
 search_button = Titanium.UI.createButton({
 	title:'Search',
-	bottom:10,
-	right:10,
+	backgroundImage:'/buttons/matching.png',
+	font:{fontFamily:'S2G Uni font',fontSize:25},
+	bottom:0,
+	width:320,
+	height:60,
 });
 search_button.addEventListener('click', function(){
-	win_search.open(open_animation);
+	win_search.open();
 });
 win_samisimbow.add(name_label);
 win_samisimbow.add(user_image);
@@ -135,39 +189,149 @@ win_samisimbow.add(facebook_logout);
 
 /************************edit tag************************/
 edit_field = Titanium.UI.createTextField({
-	top:100,
-	width:100,
+	top:120,
+	width:250,
+	hintText:'検索 or 新規作成してください',
+	returnKeyType:Titanium.UI.RETURNKEY_DONE,
+	font:{fontSize:15},
+	clearButtonMode:Titanium.UI.INPUT_BUTTONMODE_ALWAYS,
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 });
-edit_done = Ti.UI.createButton({
-	systemButton:Ti.UI.iPhone.SystemButton.DONE,
+edit_comment_field = Titanium.UI.createTextArea({
+	top:250,
+	width:250,
+	height:190,
+	hintText:'ご自由にどうぞ',
+	verticalAlign:Titanium.UI.TEXT_VERTICAL_ALIGNMENT_TOP,
+	returnKeyType:Titanium.UI.RETURNKEY_DONE,
+	font:{fontSize:15},
+	clearButtonMode:Titanium.UI.INPUT_BUTTONMODE_NEVER,
+	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
+	borderRadius:5,
 });
-edit_toolbar = Ti.UI.createToolbar({
-	top:-1,
-	items:[edit_done],
+edit_comment_field.addEventListener('focus', function(){
+	win_edit_tag.animate({
+		top:-240,
+		duration:500,
+	});
+});
+edit_comment_field.addEventListener('blur', function(){
+	win_edit_tag.animate({
+		top:0,
+		duration:500,
+	});
+});
+edit_done = Ti.UI.createButton({
+	backgroundImage:'/buttons/check.png',
+	width:26,
+	height:26,
+	right:15,
+	top:30,
+});
+edit_cancel = Ti.UI.createButton({
+	backgroundImage:'/buttons/back.png',
+	width:27,
+	height:27,
+	left:15,
+	top:30,
+});
+edit_tag_label = Titanium.UI.createLabel({
+	text:'Tag',
+	font:{fontFamily:'S2G Uni font',fontSize:20},
+	color:'#fff',
+	top:80,
+	left:15,
+});
+edit_comment_label = Titanium.UI.createLabel({
+	text:'Comment',
+	font:{fontFamily:'S2G Uni font',fontSize:20},
+	color:'#fff',
+	top:210,
+	left:15,
+});
+edit_tag_search = Titanium.UI.createButton({
+	backgroundImage:'/buttons/search.png',
+	width:23,
+	height:24,
+	top:80,
+	left:50,
 });
 edit_done.addEventListener('click', function(e){
 	my_tags[editing_tag] = edit_field.value;
-	my_tag_buttons[editing_tag].title = my_tags[editing_tag];
+	tag_labels[editing_tag].text = my_tags[editing_tag];
+	my_comments[editing_tag] = edit_comment_field.value;
+	comment_labels[editing_tag].text = my_comments[editing_tag];
 	win_edit_tag.close();
 });
+edit_cancel.addEventListener('click', function(e){
+	win_edit_tag.close();
+});
+edit_title = Ti.UI.createLabel({
+	font:{fontSize:20,fontFamily:'S2G Uni font'},
+	text:'編集',
+	color:'#fff',
+	top:30,
+})
 win_edit_tag.add(edit_field);
-win_edit_tag.add(edit_toolbar);
+win_edit_tag.add(edit_comment_field);
+win_edit_tag.add(edit_done);
+win_edit_tag.add(edit_tag_label);
+win_edit_tag.add(edit_comment_label);
+win_edit_tag.add(edit_tag_search);
+win_edit_tag.add(edit_cancel);
+win_edit_tag.add(edit_title);
 
 /***********************search***********************/
-search_back_button = Titanium.UI.createButton({
-	style:Ti.UI.iPhone.SystemButtonStyle.BORDERED,
-	title:'戻る',
+for(var i=0;i<3;i++){
+	search_select_buttons[i] = Titanium.UI.createButton({
+		backgroundImage:'/buttons/'+i+'.png',
+		width:85,
+		height:72,
+		left:65+85*i,
+		bottom:0,
+		font:{fontFamily:'S2G Uni font',fontSize:20},
+		color:'#000',
+	});
+	if(i==0)		search_select_buttons[i].title = 'A';
+	else if(i==1)	search_select_buttons[i].title = 'B';
+	else if(i==2)	search_select_buttons[i].title = 'C';
+	win_search.add(search_select_buttons[i]);
+}
+search_select_all = Titanium.UI.createButton({
+	title:'All',
+	backgroundImage:'/buttons/all.png',
+	width:65,
+	height:72,
+	left:0,
+	bottom:0,
+	font:{fontFamily:'S2G Uni font',fontSize:20},
+	color:'#000',
 });
-search_toolbar = Titanium.UI.createToolbar({
-	top:-1,
-	items:[search_back_button],
+search_my_icon = Titanium.UI.createImageView({
+	top:190,
+});
+search_load = Titanium.UI.createButton({
+	backgroundImage:'/buttons/loading.png',
+	width:27,
+	height:27,
+	right:15,
+	top:30,
+});
+search_back_button = Titanium.UI.createButton({
+	backgroundImage:'/buttons/back.png',
+	width:27,
+	height:27,
+	left:15,
+	top:30,
 });
 search_back_button.addEventListener('click', function(){
 	win_search.close();
 });
-win_search.add(search_toolbar);
+win_search.add(search_select_all);
+win_search.add(search_my_icon);
+win_search.add(search_load);
+win_search.add(search_back_button);
 
 
 /************************create start window***********************/
@@ -181,7 +345,8 @@ if(Ti.Facebook.loggedIn){
 function setFacebookData(e){
 	if (e.success) {
         var obj = JSON.parse(e.result);
-        name_label.text = obj.name;
+        name_label.text = obj.first_name+" のステータス";
         user_image.url = "https://graph.facebook.com/"+obj.id+"/picture";
+        search_my_icon.url = "https://graph.facebook.com/"+obj.id+"/picture";
     }
 }

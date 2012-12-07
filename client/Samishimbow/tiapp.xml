@@ -8,7 +8,7 @@
         <target device="blackberry">false</target>
     </deployment-targets>
     <sdk-version>2.1.3.GA</sdk-version>
-    <id>samishimbow</id>
+    <id>net.samishimbo</id>
     <name>Samishimbow</name>
     <version>1.0</version>
     <publisher>malt</publisher>
