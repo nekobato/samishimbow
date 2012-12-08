@@ -215,7 +215,6 @@ edit_comment_field = Ti.UI.createTextArea({
 	top:250,
 	width:250,
 	height:190,
-	hintText:'ご自由にどうぞ',
 	verticalAlign:Ti.UI.TEXT_VERTICAL_ALIGNMENT_TOP,
 	returnKeyType:Ti.UI.RETURNKEY_DONE,
 	font:{fontSize:15},

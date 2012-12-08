@@ -215,7 +215,6 @@ edit_comment_field = Titanium.UI.createTextArea({
 	top:250,
 	width:250,
 	height:190,
-	hintText:'ご自由にどうぞ',
 	verticalAlign:Titanium.UI.TEXT_VERTICAL_ALIGNMENT_TOP,
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	font:{fontSize:15},
