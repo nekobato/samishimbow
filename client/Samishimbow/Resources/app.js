@@ -1,13 +1,9 @@
+var server_name = 'http://ec2-23-20-200-122.compute-1.amazonaws.com/samishimbow/';
+
 var my_tags = new Array(3);
 var my_comments = new Array(3);
 var my_tag_flags = new Array(3);
-my_tags[0] = "カラオケ";
-my_tags[1] = "かも";
-my_tags[2] = "めし";
-my_comments[0] = "カラオケ行く人募集中だよおおおおおおお";
-my_comments[1] = "鴨池でまったりしたい人募集中だよおおおおおおお";
-my_comments[2] = "お腹すいた";
-my_tag_flags[0] = true;
+my_tag_flags[0] = false;
 my_tag_flags[1] = false;
 my_tag_flags[2] = false;
 
@@ -81,8 +77,14 @@ facebook_logout.addEventListener('click', function(){
 });
 Ti.Facebook.addEventListener('login', function(e){
 	if(e.success){
+		win_login.remove(facebook_login);
 		Ti.Facebook.requestWithGraphPath('me',{},"GET",setFacebookData);
-		win_samisimbow.open();
+	}else{
+		var errorAlert = Titanium.UI.createAlertDialog({
+			title: 'エラー',
+			message: 'ログインに失敗しました。',
+		});
+		errorAlert.show();
 	}
 });
 Ti.Facebook.addEventListener('logout', function(e){
@@ -90,19 +92,17 @@ Ti.Facebook.addEventListener('logout', function(e){
 });
 
 /*********************login***********************/
-win_login.add(facebook_login);
+if(!Ti.Facebook.loggedIn)	win_login.add(facebook_login);
 
 /*************************main************************/
 for(var i=0;i<3;i++){
 	tag_labels[i] = Titanium.UI.createLabel({
-		text:my_tags[i],
 		top:105+i*100,
 		left:5,
 		color:'#000',
 		font:{fontSize:25,fontFamily:'S2G Uni font'},
 	});
 	comment_labels[i] = Titanium.UI.createLabel({
-		text:my_comments[i],
 		top:135+i*100,
 		left:5,
 		width:260,
@@ -131,36 +131,39 @@ for(var i=0;i<3;i++){
 }
 my_tag_buttons[0].addEventListener('click', function(){
 	editing_tag = 0;
-	edit_field.value=""+my_tags[editing_tag];
-	edit_comment_field.value=""+my_comments[editing_tag];
 	win_edit_tag.open();
 });
 my_tag_buttons[1].addEventListener('click', function(){
 	editing_tag = 1;
-	edit_field.value=""+my_tags[editing_tag];
-	edit_comment_field.value=""+my_comments[editing_tag];
 	win_edit_tag.open();
 });
 my_tag_buttons[2].addEventListener('click', function(){
 	editing_tag = 2;
-	edit_field.value=my_tags[editing_tag];
-	edit_comment_field.value=my_comments[editing_tag];
 	win_edit_tag.open();
 });
 tag_switch[0].addEventListener('click', function(){
-	my_tag_flags[0] = !my_tag_flags[0];
-	if(my_tag_flags[0]) tag_switch[0].backgroundImage = '/buttons/on.png';
-	else				tag_switch[0].backgroundImage = '/buttons/off.png';
+	if(my_tags[0] != "なし"){
+		my_tag_flags[0] = !my_tag_flags[0];
+		if(my_tag_flags[0]) tag_switch[0].backgroundImage = '/buttons/on.png';
+		else				tag_switch[0].backgroundImage = '/buttons/off.png';
+		sendTagSwitchs();
+	}
 });
 tag_switch[1].addEventListener('click', function(){
-	my_tag_flags[1] = !my_tag_flags[1];
-	if(my_tag_flags[1]) tag_switch[1].backgroundImage = '/buttons/on.png';
-	else				tag_switch[1].backgroundImage = '/buttons/off.png';
+	if(my_tags[1] != "なし"){
+		my_tag_flags[1] = !my_tag_flags[1];
+		if(my_tag_flags[1]) tag_switch[1].backgroundImage = '/buttons/on.png';
+		else				tag_switch[1].backgroundImage = '/buttons/off.png';
+		sendTagSwitchs();
+	}
 });
 tag_switch[2].addEventListener('click', function(){
-	my_tag_flags[2] = !my_tag_flags[2];
-	if(my_tag_flags[2]) tag_switch[2].backgroundImage = '/buttons/on.png';
-	else				tag_switch[2].backgroundImage = '/buttons/off.png';
+	if(my_tags[2] != "なし"){
+		my_tag_flags[2] = !my_tag_flags[2];
+		if(my_tag_flags[2]) tag_switch[2].backgroundImage = '/buttons/on.png';
+		else				tag_switch[2].backgroundImage = '/buttons/off.png';
+		sendTagSwitchs();
+	}
 });
 name_label = Titanium.UI.createLabel({
 	font:{fontSize:20, fontFamily:'S2G Uni font'},
@@ -188,6 +191,16 @@ win_samisimbow.add(search_button);
 win_samisimbow.add(facebook_logout);
 
 /************************edit tag************************/
+win_edit_tag.addEventListener('open', function(){
+	if(my_tags[editing_tag] == 'なし'){
+		edit_field.value = '';
+		edit_comment_field.value = 'ご自由にどうぞ';
+		edit_comment_field.color = '#888';
+	}else{
+		edit_field.value=""+my_tags[editing_tag];
+		edit_comment_field.value=""+my_comments[editing_tag];
+	}
+});
 edit_field = Titanium.UI.createTextField({
 	top:120,
 	width:250,
@@ -212,15 +225,23 @@ edit_comment_field = Titanium.UI.createTextArea({
 });
 edit_comment_field.addEventListener('focus', function(){
 	win_edit_tag.animate({
-		top:-240,
+		top:-210,
 		duration:500,
 	});
+	if(this.value == 'ご自由にどうぞ'){
+		this.value = '';
+		this.color = '#000';
+	}
 });
 edit_comment_field.addEventListener('blur', function(){
 	win_edit_tag.animate({
 		top:0,
 		duration:500,
 	});
+	if(this.value == ''){
+		this.value = 'ご自由にどうぞ';
+		this.color = '#888';
+	}
 });
 edit_done = Ti.UI.createButton({
 	backgroundImage:'/buttons/check.png',
@@ -258,11 +279,20 @@ edit_tag_search = Titanium.UI.createButton({
 	left:50,
 });
 edit_done.addEventListener('click', function(e){
-	my_tags[editing_tag] = edit_field.value;
-	tag_labels[editing_tag].text = my_tags[editing_tag];
-	my_comments[editing_tag] = edit_comment_field.value;
-	comment_labels[editing_tag].text = my_comments[editing_tag];
-	win_edit_tag.close();
+	if(edit_field.value != ''){
+		my_tags[editing_tag] = edit_field.value;
+		tag_labels[editing_tag].text = my_tags[editing_tag];
+		my_comments[editing_tag] = edit_comment_field.value;
+		comment_labels[editing_tag].text = my_comments[editing_tag];
+		my_tag_flags[editing_tag] = true;
+		tag_switch[editing_tag].backgroundImage = '/buttons/on.png';
+		
+		Ti.App.Properties.setString('Tag'+editing_tag, my_tags[editing_tag]);
+		Ti.App.Properties.setString('Comment'+editing_tag, my_comments[editing_tag]);
+		if(sendMyTags() && sendTagSwitchs())	win_edit_tag.close();
+	}else{
+		win_edit_tag.close();
+	}
 });
 edit_cancel.addEventListener('click', function(e){
 	win_edit_tag.close();
@@ -336,17 +366,165 @@ win_search.add(search_back_button);
 
 /************************create start window***********************/
 win_login.open();
-if(Ti.Facebook.loggedIn){
+if(!Titanium.Network.online){
+	var errorAlert = Titanium.UI.createAlertDialog({
+		title: 'ネットワークエラー',
+		message: 'ネットワークに接続してください。',
+	});
+	errorAlert.show();
+}else if(!Titanium.Geolocation.locationServicesEnabled){
+	var errorAlert = Titanium.UI.createAlertDialog({
+		title: 'エラー',
+		message: 'GPSを有効にしてください。',
+	});
+	errorAlert.show();
+}else if(Ti.Facebook.loggedIn){
 	Ti.Facebook.requestWithGraphPath('me',{},"GET",setFacebookData);
-	win_samisimbow.open();
 }
 
 /***********************functions*************************/
 function setFacebookData(e){
-	if (e.success) {
+	if(e.success) {
         var obj = JSON.parse(e.result);
         name_label.text = obj.first_name+" のステータス";
         user_image.url = "https://graph.facebook.com/"+obj.id+"/picture";
         search_my_icon.url = "https://graph.facebook.com/"+obj.id+"/picture";
+        
+        if(Ti.App.Properties.getString('FBId') != obj.id){
+        	if(!sendMyData(obj))	return;
+        	Ti.App.Properties.setString('FBId', obj.id);
+        	getTags(false);
+        }else{
+        	getTags(true);
+        }
+        
+        win_samisimbow.open();
+        win_login.add(facebook_login);
+    }else{
+    	var errorAlert = Titanium.UI.createAlertDialog({
+			title: 'エラー',
+			message: 'ログインに失敗しました。',
+		});
+		errorAlert.show();
     }
+}
+
+function getTags(isLoad){
+	for(var i=0;i<3;i++){
+		if(!isLoad){
+			Ti.App.Properties.setString('Tag'+i, 'なし');
+			Ti.App.Properties.setString('Comment'+i, 'タッチしてください。');
+		}
+		my_tags[i] = Ti.App.Properties.getString('Tag'+i);
+		my_comments[i] = Ti.App.Properties.getString('Comment'+i);
+		
+		tag_labels[i].text = my_tags[i];
+		comment_labels[i].text = my_comments[i];
+	}
+}
+
+function sendMyData(obj){
+	var xhr = Ti.Network.createHTTPClient();
+	xhr.open('GET', server_name + 'fblogin?fb_id=' + obj.id + '&name=' + obj.first_name);
+	xhr.onerror = function(){
+		var errorAlert = Titanium.UI.createAlertDialog({
+			title: 'エラー',
+			message: 'サーバーとの接続に失敗しました。',
+		});
+		errorAlert.show();
+		return false;
+	}
+	xhr.onload = function(){
+		var response = JSON.parse(this.responseText);
+		Ti.App.Properties.setString('Id', response.id[0]);
+	}
+	
+	xhr.send();
+	return true;
+}
+
+function sendMyTags(){
+	var xhr = Ti.Network.createHTTPClient();
+	var str = server_name + 'updatetag?id=' + Ti.App.Properties.getString('Id') + '&';
+	var i;
+	for(i=0;i<3;i++) str += 'tag' + (i+1) + '=' + my_tags[i] + '&';
+	for(i=0;i<3;i++){
+		str += 'tag' + (i+1) + '_detail=' + my_comments[i];
+		if(i<2) str += '&';
+	}
+	xhr.open('GET', str);
+	xhr.onerror = function(){
+		var errorAlert = Titanium.UI.createAlertDialog({
+			title: 'エラー',
+			message: 'サーバーとの接続に失敗しました。',
+		});
+		errorAlert.show();
+		return false;
+	}
+	
+	xhr.send();
+	return true;
+}
+
+function sendTagSwitchs(){
+	var xhr = Ti.Network.createHTTPClient();
+	var str = server_name + 'switchtag?id=' + Ti.App.Properties.getString('Id') + '&';
+	var i;
+	for(i=0;i<3;i++){
+		var bool;
+		if(my_tag_flags[i])	bool = 1;
+		else				bool = 0;
+		str += 'tag' + (i+1) + '=' + bool;
+		if(i<2) str += '&';
+	}
+	xhr.open('GET', str);
+	xhr.onerror = function(){
+		var errorAlert = Titanium.UI.createAlertDialog({
+			title: 'エラー',
+			message: 'サーバーとの接続に失敗しました。',
+		});
+		errorAlert.show();
+		return false;
+	}
+	
+	xhr.send();
+	
+	sendGPS();
+	return true;
+}
+
+function sendGPS(){
+	Titanium.Geolocation.getCurrentPosition(function(e){
+		if (!e.success || e.error){
+			var errorAlert = Titanium.UI.createAlertDialog({
+				title: 'エラー',
+				message: '位置情報が取得できませんでした',
+			});
+			errorAlert.show();
+            return;
+        }
+        
+		var xhr = Ti.Network.createHTTPClient();
+		var str = server_name + 'updategeo?id=' + Ti.App.Properties.getString('Id') + '&geox=' + e.coords.latitude + '&geoy=' + e.coords.longitude;
+		
+		xhr.open('GET', str);
+		xhr.onerror = function(){
+			var errorAlert = Titanium.UI.createAlertDialog({
+				title: 'エラー',
+				message: 'サーバーとの接続に失敗しました。',
+			});
+			errorAlert.show();
+		}
+		xhr.onload = function(){
+			if(this.responseText != 'success'){
+				var errorAlert = Titanium.UI.createAlertDialog({
+					title: 'エラー',
+					message: 'サーバーとの接続に失敗しました。',
+				});
+				errorAlert.show();
+			}
+		}
+		
+		xhr.send();
+	});
 }

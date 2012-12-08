@@ -14,7 +14,7 @@ NSString * const TI_APPLICATION_URL = @"http://";
 NSString * const TI_APPLICATION_NAME = @"Samishimbow";
 NSString * const TI_APPLICATION_VERSION = @"1.0";
 NSString * const TI_APPLICATION_DESCRIPTION = @"not specified";
-NSString * const TI_APPLICATION_COPYRIGHT = @"2012 by malt";
+NSString * const TI_APPLICATION_COPYRIGHT = @"2012 by km3";
 NSString * const TI_APPLICATION_GUID = @"3a222597-a5bc-4677-9d56-7ada01e3bb5b";
 BOOL const TI_APPLICATION_ANALYTICS = true;
 
