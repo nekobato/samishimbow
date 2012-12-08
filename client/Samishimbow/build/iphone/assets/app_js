@@ -171,6 +171,8 @@ name_label = Ti.UI.createLabel({
 	top:40,
 });
 user_image = Ti.UI.createImageView({
+	width:0,
+	height:0,
 	left:10,
 	top:10,
 });
@@ -386,6 +388,8 @@ function setFacebookData(e){
 	if(e.success) {
         var obj = JSON.parse(e.result);
         name_label.text = obj.first_name+" のステータス";
+        user_image.width = 50;
+        user_image.height = 50;
         user_image.url = "https://graph.facebook.com/"+obj.id+"/picture";
         search_my_icon.url = "https://graph.facebook.com/"+obj.id+"/picture";
         
