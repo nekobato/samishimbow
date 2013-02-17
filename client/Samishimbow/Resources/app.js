@@ -479,6 +479,9 @@ function setFacebookData(e){
         	Ti.App.Properties.setString('FBId', obj.id);
         	getTags(false);
         }else{
+        	if(Ti.App.Properties.getString('Id')==null){
+        		sendMyData(obj);
+        	}
         	getTags(true);
         }
         
@@ -520,7 +523,7 @@ function sendMyData(obj){
 	}
 	xhr.onload = function(){
 		var response = JSON.parse(this.responseText);
-		Ti.App.Properties.setString('Id', response.id[0]);
+		Ti.App.Properties.setString('Id', response[0].id);
 	}
 	
 	xhr.send();
@@ -529,7 +532,15 @@ function sendMyData(obj){
 
 function sendMyTags(){
 	var xhr = Ti.Network.createHTTPClient();
-	var str = server_name + 'updatetag?id=' + Ti.App.Properties.getString('Id') + '&';
+	var my_id = Ti.App.Properties.getString('Id');
+	if(my_id == null){
+		Ti.Facebook.requestWithGraphPath('me',{},"GET",setFacebookData);
+		do{
+			my_id = Ti.App.Properties.getString('Id');
+		}while(my_id==null);
+	}
+	var str = server_name + 'updatetag?id=' + my_id + '&';
+	
 	var i;
 	for(i=0;i<3;i++) str += 'tag' + (i+1) + '=' + my_tags[i] + '&';
 	for(i=0;i<3;i++){
@@ -552,7 +563,14 @@ function sendMyTags(){
 
 function sendTagSwitchs(){
 	var xhr = Ti.Network.createHTTPClient();
-	var str = server_name + 'switchtag?id=' + Ti.App.Properties.getString('Id') + '&';
+	var my_id = Ti.App.Properties.getString('Id');
+	if(my_id == null){
+		Ti.Facebook.requestWithGraphPath('me',{},"GET",setFacebookData);
+		do{
+			my_id = Ti.App.Properties.getString('Id');
+		}while(my_id==null);
+	}
+	var str = server_name + 'switchtag?id=' + my_id + '&';
 	var i;
 	for(i=0;i<3;i++){
 		var bool;
@@ -659,8 +677,7 @@ function getFriends(){
 			}
 			if(i==display_num-1) break;
 		}
-		
-		alert(search_updasted_time);
+		if(max_len == 0) max_len = 1;
 		
 		for(i=0;i<3;i++){
 			for(var j=0;j<display_num;j++){
