@@ -147,7 +147,7 @@ static void *finishedContext = @"finishedContext";
     
     NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
     NSArray* facebookCookies = [cookies cookiesForURL:
-                                [NSURL URLWithString:@"http://login.facebook.com"]];
+                                [NSURL URLWithString:@"https://login.facebook.com"]];
     
     for (NSHTTPCookie* cookie in facebookCookies) {
         [cookies deleteCookie:cookie];
